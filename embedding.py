@@ -25,11 +25,11 @@ class Embedder:
         relation2id = {}
         for row in file:
             item_list = row[0].split('.')
-            # 由于数据集中只有 people.person.*** 的关系，所以只选择这一部分加入关系列表
+            # 由于数据集中只有 people.***.*** 的关系，所以只选择这一部分加入关系列表
             if 'people' in item_list:
                 relation2id[item_list[-1]] = row[1]
         j = json.dumps(relation2id)
-        fileObject = open("relation2id.json", 'w')
+        fileObject = open("results/relation2id.json", 'w')
         fileObject.write(j)
         fileObject.close()
         return relation2id

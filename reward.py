@@ -1,5 +1,4 @@
 import torch
-from expeiment_settings import *
 from state import *
 
 class Reward:
@@ -14,17 +13,15 @@ class ToyRewardFunc(Reward):
     def __init__(self):
         super().__init__()
 
-    def __call__(self, next_state:State, answer):
+    def __call__(self, next_state:State, answer: str):
         if next_state.e_t == answer:
             return torch.tensor(100)
         else:
             return torch.tensor(0)
 
 class CosineSimiliarityReward(Reward):
-    def __init__(self, gamma):
+    def __init__(self):
         super().__init__()
-        self.reward_cache = dict()
-        self.gamma = gamma
 
     def __call__(self, next_state: State, answer: str):
         t = next_state.t
@@ -36,5 +33,5 @@ class CosineSimiliarityReward(Reward):
         H_t = torch.norm(H_t)
         reward = torch.cosine_similarity(Q_t, H_t, dim=0)
         if answer == next_state.e_t:
-            reward = reward + 1
+            reward = reward + torch.tensor(1)
         return reward

@@ -6,7 +6,7 @@ from reward import *
 class Environment:
     # ## action: relation
     #    state: entity
-    def __init__(self, KG: KnowledgeGraph, reward_function :Reward = CosineSimiliarityReward(gamma=0.8)):
+    def __init__(self, KG: KnowledgeGraph, reward_function :Reward = CosineSimiliarityReward()):
         self.KG = KG
         self.state = None
         self.start_state = None
