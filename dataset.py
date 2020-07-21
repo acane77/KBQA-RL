@@ -3,7 +3,7 @@ import pandas as pd
 from knowledge_graph import KnowledgeGraph
 from entity_link import EntityLinker
 from embedding import Embedder
-from expeiment_settings import ExperimentSettings
+from expeiment_settings import ExpSet
 from utils import Utility
 
 class Dataset:
@@ -49,7 +49,7 @@ class Dataset:
 
     def embed_question(self, question):
         n, idx = len(question), 0
-        q_emb = torch.zeros((n, ExperimentSettings.word_embedding_dimension))
+        q_emb = torch.zeros((n, ExpSet.word_embedding_dimension))
         for word in question:
             if word == '<e>':
                 continue

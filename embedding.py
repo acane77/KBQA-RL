@@ -3,11 +3,11 @@ import pandas as pd
 import csv
 import torch
 from utils import Utility
-from expeiment_settings import ExperimentSettings
+from expeiment_settings import ExpSet
 
 class Embedder:
     def __init__(self):
-        if ExperimentSettings.enable_cache and Utility.Binary.exists('embeddings'):
+        if ExpSet.enable_cache and Utility.Binary.exists('embeddings'):
             print('Loading embeddings from cache')
             self.word_embeddings, self.relation2id, self.relation_embedding = Utility.Binary.load('embeddings')
             return
@@ -27,7 +27,7 @@ class Embedder:
         print('Getting relation Embeddings')
         self.relation_embedding = np.memmap(embedding_relation_file , dtype='float32', mode='r')
 
-        if ExperimentSettings.enable_cache:
+        if ExpSet.enable_cache:
             Utility.Binary.save('embeddings', [self.word_embeddings, self.relation2id, self.relation_embedding])
 
     def process_relation(self, relation2id_file: str):

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import math
-from expeiment_settings import ExperimentSettings
+from expeiment_settings import ExpSet
 
 torch.manual_seed(123456)
 
@@ -66,7 +66,7 @@ class GRU(nn.Module):
         #  USE GPU FOR MODEL  #
         #######################
         # print(x.shape,"x.shape")100, 28, 28
-        if ExperimentSettings.enable_cuda and torch.cuda.is_available():
+        if ExpSet.enable_cuda and torch.cuda.is_available():
             h0 = Variable(torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).cuda())
         else:
             h0 = Variable(torch.zeros(self.layer_dim, x.size(0), self.hidden_dim))

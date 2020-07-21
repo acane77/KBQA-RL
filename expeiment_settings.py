@@ -80,7 +80,7 @@ class ExperimentSettingsMeta(type):
         return self._enable_cache
 
 
-class ExperimentSettings(metaclass=ExperimentSettingsMeta):
+class ExpSet(metaclass=ExperimentSettingsMeta):
     @staticmethod
     def parse_args():
         parser = argparse.ArgumentParser()
@@ -110,16 +110,16 @@ class ExperimentSettings(metaclass=ExperimentSettingsMeta):
         parser.add_argument('--disable-cache', dest='disable_cache',  action='count', default=0,
                             help='Disable cache on dataset')
         args = parser.parse_args()
-        ExperimentSettings._enable_cuda = args.cuda > 0
-        ExperimentSettings._seed = args.seed
-        ExperimentSettings._epochs = args.epochs
-        ExperimentSettings._episodes = args.episodes
-        ExperimentSettings._lr = args.lr
-        ExperimentSettings._use_attention = args.attention > 0
-        ExperimentSettings._use_perceptron = args.perceptron > 0
-        ExperimentSettings._path_KB = args.dskg
-        ExperimentSettings._path_QA = args.dsqa
-        ExperimentSettings._gamma = args.gamma
-        ExperimentSettings._max_T = args.T
-        ExperimentSettings._enable_cache = args.disable_cache == 0
+        ExpSet._enable_cuda = args.cuda > 0
+        ExpSet._seed = args.seed
+        ExpSet._epochs = args.epochs
+        ExpSet._episodes = args.episodes
+        ExpSet._lr = args.lr
+        ExpSet._use_attention = args.attention > 0
+        ExpSet._use_perceptron = args.perceptron > 0
+        ExpSet._path_KB = args.dskg
+        ExpSet._path_QA = args.dsqa
+        ExpSet._gamma = args.gamma
+        ExpSet._max_T = args.T
+        ExpSet._enable_cache = args.disable_cache == 0
 

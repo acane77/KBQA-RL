@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from nets.attention import Attention
 from nets.perceptron import Perceptron
-from expeiment_settings import ExperimentSettings
+from expeiment_settings import ExpSet
 
 class PolicyNet(nn.Module):
     def __init__(self, use_attention, use_perceptron):
@@ -13,8 +13,8 @@ class PolicyNet(nn.Module):
         self.use_perceptron = use_perceptron
         self.embedder = None  #initialized in rl class
 
-        self.attention_model = Attention(ExperimentSettings.dim)
-        self.perceptron = Perceptron(ExperimentSettings.dim, ExperimentSettings.dim, 2 * ExperimentSettings.dim)
+        self.attention_model = Attention(ExpSet.dim)
+        self.perceptron = Perceptron(ExpSet.dim, ExpSet.dim, 2 * ExpSet.dim)
 
     def forward(self, action_space, question_t: torch.Tensor, history_t: torch.Tensor):
         semantic_scores = []

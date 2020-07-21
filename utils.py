@@ -1,7 +1,7 @@
 import pickle
 import os
 import torch
-from expeiment_settings import ExperimentSettings
+from expeiment_settings import ExpSet
 
 class Utility:
     class Binary:
@@ -19,7 +19,7 @@ class Utility:
 
     @staticmethod
     def to_gpu(x):
-        if ExperimentSettings.enable_cuda and torch.cuda.is_available():
+        if ExpSet.enable_cuda and torch.cuda.is_available():
             return x.cuda()
         return x
 

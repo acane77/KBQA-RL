@@ -3,7 +3,7 @@ from policy_network import PolicyNet
 from nets.lstm import GRU
 from nets.perceptron import Perceptron
 from env import Environment
-from expeiment_settings import ExperimentSettings
+from expeiment_settings import ExpSet
 from state import State
 from utils import Utility
 import torch
@@ -21,18 +21,18 @@ class ReinforcementLearning:
 
         self.policy_net = policy_net
         self.policy_net.embedder = self.dataset.embedder
-        self.optimizer = torch.optim.Adam(policy_net.parameters(), lr=ExperimentSettings.learning_rate)
+        self.optimizer = torch.optim.Adam(policy_net.parameters(), lr=ExpSet.learning_rate)
         self.initialize_nets()
 
-        self.slp = nn.Linear(in_features=ExperimentSettings.dim, out_features=ExperimentSettings.dim)
+        self.slp = nn.Linear(in_features=ExpSet.dim, out_features=ExpSet.dim)
 
     @property
     def KG(self):
         return self.dataset.KG
 
     def initialize_nets(self):
-        self.gru = GRU(ExperimentSettings.dim, ExperimentSettings.dim // 2, 2, ExperimentSettings.dim)
-        self.perceptron = Perceptron(ExperimentSettings.dim, ExperimentSettings.dim, 2*ExperimentSettings.dim)
+        self.gru = GRU(ExpSet.dim, ExpSet.dim // 2, 2, ExpSet.dim)
+        self.perceptron = Perceptron(ExpSet.dim, ExpSet.dim, 2 * ExpSet.dim)
 
     @property
     def T(self):
@@ -96,8 +96,8 @@ class ReinforcementLearning:
         total_predictions = self.episodes
         for episode in range(self.episodes):
             reward_pool = []
-            T = ExperimentSettings.max_T
-            d = ExperimentSettings.dim
+            T = ExpSet.max_T
+            d = ExpSet.dim
             n = len(q)
 
             ## 历史信息
@@ -137,7 +137,7 @@ class ReinforcementLearning:
                 H_t.append(self.gru(action_pool[t].unsqueeze(dim=0).unsqueeze(dim=0)))
                 # 从环境获取奖励
                 next_state, reward, reach_answer = self.env.step(action, q_t, H_t)
-                episode_reward = ExperimentSettings.gamma * episode_reward + reward
+                episode_reward = ExpSet.gamma * episode_reward + reward
                 state_pool[t+1] = next_state
                 rewards.append(reward)
                 action_probs.append(action_distribution)
