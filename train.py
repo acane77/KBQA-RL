@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from dataset import Dataset
 from policy_network import PolicyNet
 from reinforcement_learning import ReinforcementLearning
