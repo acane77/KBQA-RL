@@ -4,7 +4,7 @@ class EntityLinker:
     def __init__(self, KG: KnowledgeGraph):
         self.KG = KG
 
-    def find_entity(self, question: str):
+    def parse_question(self, question: str):
         '''
         将问题分为以单词为单位的分词列表，并找出头实体(e_s)【问题中在KG实体的单词中最长的单词】，并替换为<e>
 
