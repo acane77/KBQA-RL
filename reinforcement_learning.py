@@ -9,7 +9,7 @@ import torch
 import numpy as np
 
 class ReinforcementLearning:
-    def __init__(self, dataset: Dataset, policy_net: PolicyNet, num_epochs, num_episode, steps,use_attention=False, use_perceptron=False):
+    def __init__(self, dataset: Dataset, policy_net: PolicyNet, num_epochs, num_episode, steps):
         self.dataset = dataset
         self.epochs = num_epochs
         self.episodes = num_episode
@@ -58,7 +58,10 @@ class ReinforcementLearning:
                 total_acc.append(acc)   # int
                 total_loss.append(loss) # float
 
-            print('## Training loss: {}, accuracy: {}'.format(np.mean(total_loss), np.mean(total_acc)))
+            print('## {} loss: {}, accuracy: {}'.format('Training' if self.training else 'Testing',
+                                                        np.mean(total_loss), np.mean(total_acc)))
+            total_acc, total_loss = [], []
+
             # Validate
             if not self.training:
                 continue
@@ -72,6 +75,7 @@ class ReinforcementLearning:
                 validate_loss.append(loss)
 
             print('## Validation loss: {}, accuracy: {}'.format(np.mean(validate_loss), np.mean(validate_acc)))
+            validate_acc, validate_loss = [], []
 
     def learn(self, q, e_s, answer, training):
         '''
@@ -162,4 +166,11 @@ class ReinforcementLearning:
     def sample_action(self, action_space, action_distribution):
         idx = torch.multinomial(action_distribution, 1).item()
         return action_space[idx]
+
+    def save_model(self, filename):
+        torch.save(self.policy_net.state_dict(), filename)
+
+    def load_model(self, filename):
+        self.policy_net.load_state_dict(torch.load(filename))
+        self.policy_net.eval()
 

@@ -12,7 +12,7 @@ class KnowledgeGraph:
             self._create_graph_structure()
 
         except Exception as e:
-            print('File path is wrong, with path_kb={}, path_qa={}'.format(path_KB, path_QA))
+            print('File path is wrong, with path_kb={}'.format(path_KB))
 
         print('KG Loaded: {} entities loaded'.format(len(self._entities)))
 
