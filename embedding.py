@@ -6,7 +6,7 @@ import torch
 
 class Embedder:
     def __init__(self):
-        freebase_path = "./dataset"
+        freebase_path = "datasets"
         glove_data_file = "{}/glove.6B.50d.txt".format(freebase_path)
         relation2id_file = '{}/relation2id.txt'.format(freebase_path)
         embedding_relation_file = '{}/relation2vec.bin'.format(freebase_path)
@@ -43,8 +43,12 @@ class Embedder:
         :param word: word
         :return: word embedding :tensor
         '''
-        emb = self.word_embeddings.loc[word].values
-        return torch.tensor(emb)
+        try:
+            emb = self.word_embeddings.loc[word].values
+            return torch.tensor(emb)
+        except Exception as e:
+            print('Unable to get word embedding:', word, '   exception:', e)
+            return None
 
     def get_relation_embedding(self, rel: str):
         '''
@@ -58,9 +62,10 @@ class Embedder:
             emb = self.relation_embedding[vector_index:vector_index+50]
             return torch.tensor(emb)
         except Exception as e:
+            print('Unable to get relation embedding:', rel, '   exception:', e)
             return None
 
 if __name__ == '__main__':
     emb = Embedder()
-    #print(emb.get_word_embedding('the'))
+    print(emb.get_word_embedding('thefdddsfsdfsdf'))
     print(emb.get_relation_embedding('children'))

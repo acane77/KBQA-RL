@@ -1,16 +1,13 @@
 import pandas as pd
 
 class KnowledgeGraph:
-    def __init__(self, path_KB, path_QA):
+    def __init__(self, path_KB):
         # 图结构，用邻接表存储
         #   For each element: ent_name -> array{relations}
         self._graph = {}
 
         try:
-            self.df_qa = pd.read_csv(path_QA, sep='\t', header=None, names=['question_sentence', 'answer_set', 'answer_path'])
-            self.df_qa['answer'] = self.df_qa['answer_set'].apply(lambda x: x.split('(')[0])
-            self.df_qa['q_split'] = self.df_qa['question_sentence'].apply(lambda x: x.lower().split(' '))
-            self.df_kb = pd.read_csv(path_KB, sep='\s', header=None, names=['e_subject', 'relation', 'e_object'])
+            self.df_kb = pd.read_csv(path_KB, sep='\s', header=None, names=['e_subject', 'relation', 'e_object'], engine='python')
             self._create_entity_set()
             self._create_graph_structure()
 

@@ -42,7 +42,7 @@ class Environment:
         return self.step_count
 
 if __name__ == '__main__':
-    KG = KnowledgeGraph('dataset/2H-kb.txt', 'dataset/PQ-2H.txt')
+    KG = KnowledgeGraph('datasets/2H-kb.txt')
     head_ent_list = [x for x in (KG._graph.keys())]
     env = Environment(KG)
     s_t = State(None, head_ent_list[0], head_ent_list[0], 0, torch.zeros((2,2,2)), torch.zeros((2,2,2)))
