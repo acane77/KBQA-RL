@@ -10,8 +10,8 @@ class ExperimentSettingsMeta(type):
         self._gamma = 0.8
         self._learning_rate = 1e-3
         self._enable_cuda = False
-        self._path_KB = './dataset/2H-kb.txt'
-        self._path_QA = './dataset/PQ-2H.txt'
+        self._path_KB = './datasets/2H-kb.txt'
+        self._path_QA = './datasets/PQ-2H.txt'
         self._enable_cache = True
         self._use_attention = True
         self._use_perceptron = True
@@ -97,10 +97,10 @@ class ExperimentSettings(metaclass=ExperimentSettingsMeta):
                             help='Using attention in policy network. (default True)')
         parser.add_argument('--using-perceptron', dest='perceptron', action='count', default=0,
                             help='Using of episodes to train. (default True)')
-        parser.add_argument('--dataset-kg', dest='dskg', action='store', type=str, default='./dataset/2H-kb.txt',
-                            help='Path to KG file. (default ./dataset/2H-kb.txt)')
-        parser.add_argument('--dataset-qa', dest='dsqa', action='store', type=str, default='./dataset/PQ-2H.txt',
-                            help='Path to QA file. (default ./dataset/PQ-2H.txt)')
+        parser.add_argument('--dataset-kg', dest='dskg', action='store', type=str, default='./datasets/2H-kb.txt',
+                            help='Path to KG file. (default ./datasets/2H-kb.txt)')
+        parser.add_argument('--dataset-qa', dest='dsqa', action='store', type=str, default='./datasets/PQ-2H.txt',
+                            help='Path to QA file. (default ./datasets/PQ-2H.txt)')
         parser.add_argument('--load-model',  dest='load_model',action='store', type=str, default='',
                             help='Load saved model')
         parser.add_argument('--gamma', dest='gamma', action='store', type=float, default=0.8,
