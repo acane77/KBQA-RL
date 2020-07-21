@@ -31,3 +31,4 @@ class EntityLinker:
                 else:
                     modified_question_list.append(item)
         return (modified_question_list, entity)
+

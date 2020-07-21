@@ -123,5 +123,3 @@ class ExperimentSettings(metaclass=ExperimentSettingsMeta):
         ExperimentSettings._max_T = args.T
         ExperimentSettings._enable_cache = args.disable_cache == 0
 
-if __name__  == '__main__':
-    ExperimentSettings.parse_args()

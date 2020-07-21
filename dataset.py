@@ -104,9 +104,5 @@ class Dataset:
 
     def train(self, _train=True):
         self.training = _train
+        self._iter_i = 0
 
-
-
-if __name__ == '__main__':
-    ds = Dataset('datasets/2H-kb.txt', 'datasets/PQ-2H.txt')
-    print(ds[1800][0])

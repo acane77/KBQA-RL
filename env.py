@@ -48,11 +48,3 @@ class Environment:
     def t(self):
         return self.step_count
 
-if __name__ == '__main__':
-    KG = KnowledgeGraph('datasets/2H-kb.txt')
-    head_ent_list = [x for x in (KG._graph.keys())]
-    env = Environment(KG)
-    s_t = State(None, head_ent_list[0], head_ent_list[0], 0, torch.zeros((2,2,2)), torch.zeros((2,2,2)))
-    env.new_question(s_t, 'maximilian_ii_of_bavaria\n')
-    actions = (env.get_possible_actions())
-    print(env.step(actions[0], torch.zeros((2,2)), torch.zeros((2,2))))

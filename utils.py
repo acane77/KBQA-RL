@@ -32,8 +32,3 @@ class Utility:
         target = target * erase_mask + vec * mask
         return target
 
-if __name__ == '__main__':
-    target = torch.ones((5, 10))
-    vec = torch.randn(10)
-    target = Utility.inplace(target, vec, 3)
-    print(vec, target)
