@@ -7,6 +7,7 @@ from expeiment_settings import ExperimentSettings
 from state import State
 import torch
 import numpy as np
+import torch.nn as nn
 
 class ReinforcementLearning:
     def __init__(self, dataset: Dataset, policy_net: PolicyNet, num_epochs, num_episode, steps):
@@ -21,6 +22,8 @@ class ReinforcementLearning:
         self.policy_net.embedder = self.dataset.embedder
         self.optimizer = torch.optim.Adam(policy_net.parameters(), lr=ExperimentSettings.learning_rate)
         self.initialize_nets()
+
+        self.slp = nn.Linear(in_features=ExperimentSettings.dim, out_features=ExperimentSettings.dim)
 
     @property
     def KG(self):
@@ -97,13 +100,13 @@ class ReinforcementLearning:
 
             ## 历史信息
             state_pool = {}      # S_t: T x State
-            q_t = torch.zeros((T, d, n))          # q_t: T x n x d  问题池
+            q_t = torch.zeros((T, n, d))          # q_t: T x n x d  问题池
             H_t = torch.zeros((T, d))             # H_t: T x d      历史信息
             action_pool = torch.zeros((T, d))     # r_t: T x d
             attention_wenghted_question_pool = torch.zeros((T, d))  # q_t_star: T x d
             #action_history = []
             initial_action = torch.zeros(d)
-            H_t[0] = self.gru(initial_action)
+            H_t[0] = self.gru(initial_action.unsqueeze(dim=0).unsqueeze(dim=0))
 
             ## 初始化环境
             self.env.new_question(State(q, e_s, e_s, 0, q_t, H_t), answer)
@@ -114,7 +117,8 @@ class ReinforcementLearning:
 
             for t in range(T):
                 # 更新问题
-                question_t = self.perceptron(q, t)
+
+                question_t = self.slp(q)
                 q_t[t] = question_t
                 # 从环境获取动作空间
                 possible_actions = self.env.get_possible_actions()
@@ -128,16 +132,16 @@ class ReinforcementLearning:
                 #action_history.append(action)
                 # TODO: 提前获取以适应Cuda
                 action_pool[t] = self.dataset.embedder.get_relation_embedding(action)
-                H_t[t + 1] = self.gru(action_pool[t])
+                H_t[t + 1] = self.gru(action_pool[t].unsqueeze(dim=0).unsqueeze(dim=0))
                 # 从环境获取奖励
                 next_state, reward, reach_answer = self.env.step(action, question_t, H_t)
                 episode_reward = ExperimentSettings.gamma * episode_reward + reward
                 state_pool[t+1] = next_state
                 rewards.append(reward)
-                action_probs.append(action_probs)
+                action_probs.append(action_distribution)
                 if reach_answer:
                     break
-            prediction = state_pool[len(state_pool)].e_t
+            prediction = state_pool[len(state_pool)-1].e_t
             if not rewards:
                 return [prediction, None, None, None]
             action_probs = torch.stack(action_probs)

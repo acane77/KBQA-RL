@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import math
+from expeiment_settings import ExperimentSettings
 
 torch.manual_seed(123456)
 
@@ -32,15 +33,15 @@ class GRUCell(nn.Module):
         gate_x = self.x2h(x)
         gate_h = self.h2h(hidden)
 
-        gate_x = gate_x.squeeze()
-        gate_h = gate_h.squeeze()
+        #gate_x = gate_x.squeeze()
+        #gate_h = gate_h.squeeze()
 
         i_r, i_i, i_n = gate_x.chunk(3, 1)
         h_r, h_i, h_n = gate_h.chunk(3, 1)
 
-        resetgate = F.sigmoid(i_r + h_r)
-        inputgate = F.sigmoid(i_i + h_i)
-        newgate = F.tanh(i_n + (resetgate * h_n))
+        resetgate = torch.sigmoid(i_r + h_r)
+        inputgate = torch.sigmoid(i_i + h_i)
+        newgate = torch.tanh(i_n + (resetgate * h_n))
 
         hy = newgate + inputgate * (hidden - newgate)
         return hy
@@ -65,7 +66,7 @@ class GRU(nn.Module):
         #  USE GPU FOR MODEL  #
         #######################
         # print(x.shape,"x.shape")100, 28, 28
-        if torch.cuda.is_available():
+        if ExperimentSettings.enable_cuda and torch.cuda.is_available():
             h0 = Variable(torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).cuda())
         else:
             h0 = Variable(torch.zeros(self.layer_dim, x.size(0), self.hidden_dim))
@@ -82,3 +83,8 @@ class GRU(nn.Module):
         out = self.fc(out)
         # out.size() --> 100, 10
         return out
+
+if __name__ == '__main__':
+    gru = GRU(50, 50, 1, 50)
+    x = torch.randn((2, 10, 50))
+    gru(x)

@@ -22,3 +22,18 @@ class Utility:
         if ExperimentSettings.enable_cuda and torch.cuda.is_available():
             return x.cuda()
         return x
+
+    @staticmethod
+    def inplace(target, vec, i):
+        # 气抖冷！！inplace什么时候可以站起来
+        I = torch.eye(target.shape[0])
+        mask = I[i].unsqueeze(dim=1).expand(target.shape)
+        erase_mask = torch.ones(target.shape) - mask
+        target = target * erase_mask + vec * mask
+        return target
+
+if __name__ == '__main__':
+    target = torch.ones((5, 10))
+    vec = torch.randn(10)
+    target = Utility.inplace(target, vec, 3)
+    print(vec, target)

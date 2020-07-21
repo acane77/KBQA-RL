@@ -22,7 +22,7 @@ class PolicyNet(nn.Module):
         for action in action_space:
             for action in action_space:
                 ## TODO: 提前load适应GPU
-                rel = self.embedder.get_relation_embedding(action[0])
+                rel = self.embedder.get_relation_embedding(action)
                 if rel is not None:
                     # Attention Layer: Generate Similarity Scores between q and r and current point of attention
                     if self.use_attention:

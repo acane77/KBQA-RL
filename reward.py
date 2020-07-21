@@ -26,7 +26,7 @@ class CosineSimiliarityReward(Reward):
     def __call__(self, next_state: State, answer: str):
         t = next_state.t
         if t == 1:
-            return 0
+            return torch.tensor(0.)
         H_t = next_state.H_t[t]
         Q_t = next_state.q_t.sum(dim=(0, 1))  ## 将问题q_t的的每一维相加
         Q_t = torch.norm(Q_t)
