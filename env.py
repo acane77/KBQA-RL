@@ -40,7 +40,7 @@ class Environment:
 
     def get_possible_actions(self):
         action_space = self.KG.get_relations_of(self.state.current_entity)
-        if len(action_space) > 0:
+        if action_space is None or len(action_space) > 0:
             return action_space
         return None
 

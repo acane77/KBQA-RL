@@ -57,10 +57,10 @@ class Embedder:
             emb = self.word_embeddings.loc[word].values
             return torch.tensor(emb)
         except Exception as e:
-            print('Unable to get word embedding:', word, '   exception:', e)
+            #print('Unable to get word embedding:', word, '   exception:', e)
             return None
 
-    def get_relation_embedding_(self, rel: str):
+    def get_relation_embedding(self, rel: str):
         '''
         从freebase中获取关系向量
         :param rel: 关系字符串
@@ -72,19 +72,8 @@ class Embedder:
             emb = self.relation_embedding[vector_index:vector_index + 50]
             return torch.tensor(emb)
         except Exception as e:
-            print('Unable to get relation embedding:', rel, '   exception:', e)
+            #print('Unable to get relation embedding:', rel, '   exception:', e)
             return None
-
-    def get_relation_embedding(self, rel: str):
-        '''
-        从freebase中获取关系向量
-        :param rel: 关系字符串
-        :return: 关系embedding :tensor
-        '''
-        index = int(self.relation2id[rel])
-        vector_index = index * 50
-        emb = self.relation_embedding[vector_index:vector_index + 50]
-        return torch.tensor(emb)
 
 if __name__ == '__main__':
     emb = Embedder()

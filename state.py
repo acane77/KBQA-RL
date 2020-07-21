@@ -6,8 +6,7 @@ class State:
                  e_s: str,
                  e_t: str,
                  t:   int,
-                 q_t: torch.Tensor,
-                 H_t: torch.Tensor):
+                 q_t, H_t):
         '''
         :param q:   问题嵌入 :tensor[n x d]
         :param e_s: 头实体 :str

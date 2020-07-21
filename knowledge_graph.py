@@ -29,7 +29,10 @@ class KnowledgeGraph:
             self._graph[head_ent][rel] = tail_ent
 
     def get_relations_of(self, entity_name):
-        return [x for x in self._graph[entity_name].keys()]
+        try:
+            return [x for x in self._graph[entity_name].keys()]
+        except KeyError:
+            return None
 
     def get_tail_entity(self, head_entity, rel):
         return self._graph[head_entity][rel]

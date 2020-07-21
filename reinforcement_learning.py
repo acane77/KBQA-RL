@@ -5,6 +5,7 @@ from nets.perceptron import Perceptron
 from env import Environment
 from expeiment_settings import ExperimentSettings
 from state import State
+from utils import Utility
 import torch
 import numpy as np
 import torch.nn as nn
@@ -54,15 +55,16 @@ class ReinforcementLearning:
             self.dataset.train(self.training)
             print('\n >>>>>> {}'.format('TRAINING: EPOCH {}\n'.format(epoch) if self.training else 'TESTING'))
             # Train
-            for d in self.dataset:
+            for i, d in enumerate(self.dataset):
                 _, q, e_s, answer = d
+                #print(i, _, answer)
                 ## Only for display, they were tuned during each episode
                 acc, loss = self.learn(q, e_s, answer, self.training)
                 total_acc.append(acc)   # int
                 total_loss.append(loss) # float
 
             print('## {} loss: {}, accuracy: {}'.format('Training' if self.training else 'Testing',
-                                                        np.mean(total_loss), np.mean(total_acc)))
+                                                        torch.stack(total_loss).mean(), np.mean(total_acc)))
             total_acc, total_loss = [], []
 
             # Validate
@@ -77,7 +79,7 @@ class ReinforcementLearning:
                 validate_acc.append(acc)
                 validate_loss.append(loss)
 
-            print('## Validation loss: {}, accuracy: {}'.format(np.mean(validate_loss), np.mean(validate_acc)))
+            print('## Validation loss: {}, accuracy: {}'.format(torch.stack(validate_loss).mean(), np.mean(validate_acc)))
             validate_acc, validate_loss = [], []
 
     def learn(self, q, e_s, answer, training):
@@ -100,13 +102,13 @@ class ReinforcementLearning:
 
             ## 历史信息
             state_pool = {}      # S_t: T x State
-            q_t = torch.zeros((T, n, d))          # q_t: T x n x d  问题池
-            H_t = torch.zeros((T, d))             # H_t: T x d      历史信息
-            action_pool = torch.zeros((T, d))     # r_t: T x d
+            q_t = []             # q_t: T x n x d  问题池
+            H_t = []             # H_t: T x d      历史信息
+            action_pool = []     # r_t: T x d
             attention_wenghted_question_pool = torch.zeros((T, d))  # q_t_star: T x d
             #action_history = []
             initial_action = torch.zeros(d)
-            H_t[0] = self.gru(initial_action.unsqueeze(dim=0).unsqueeze(dim=0))
+            H_t.append(self.gru(initial_action.unsqueeze(dim=0).unsqueeze(dim=0)))
 
             ## 初始化环境
             self.env.new_question(State(q, e_s, e_s, 0, q_t, H_t), answer)
@@ -119,10 +121,10 @@ class ReinforcementLearning:
                 # 更新问题
 
                 question_t = self.slp(q)
-                q_t[t] = question_t
+                q_t.append(question_t)
                 # 从环境获取动作空间
                 possible_actions = self.env.get_possible_actions()
-                if action_pool is None:
+                if possible_actions is None:
                     break
                 action_space = self.beam_search(possible_actions)
                 action_space, action_distribution = self.policy_net(action_space, q_t[t], H_t[t])
@@ -131,10 +133,10 @@ class ReinforcementLearning:
                 action = self.sample_action(action_space, action_distribution)
                 #action_history.append(action)
                 # TODO: 提前获取以适应Cuda
-                action_pool[t] = self.dataset.embedder.get_relation_embedding(action)
-                H_t[t + 1] = self.gru(action_pool[t].unsqueeze(dim=0).unsqueeze(dim=0))
+                action_pool.append(self.dataset.embedder.get_relation_embedding(action))
+                H_t.append(self.gru(action_pool[t].unsqueeze(dim=0).unsqueeze(dim=0)))
                 # 从环境获取奖励
-                next_state, reward, reach_answer = self.env.step(action, question_t, H_t)
+                next_state, reward, reach_answer = self.env.step(action, q_t, H_t)
                 episode_reward = ExperimentSettings.gamma * episode_reward + reward
                 state_pool[t+1] = next_state
                 rewards.append(reward)
@@ -143,8 +145,9 @@ class ReinforcementLearning:
                     break
             prediction = state_pool[len(state_pool)-1].e_t
             if not rewards:
-                return [prediction, None, None, None]
-            action_probs = torch.stack(action_probs)
+                continue
+            # TODO: 如果这个有用，那么先考虑直接在每一个tensor上做运算，不能直接stack起来因为prob的维度不一样
+            #action_probs = (action_probs)
             if prediction == answer:
                 correct_predictions = correct_predictions + 1
             ## TODO: log_prossibility loss function

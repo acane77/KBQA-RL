@@ -11,9 +11,9 @@ class PolicyNet(nn.Module):
 
         self.use_attention = use_attention
         self.use_perceptron = use_perceptron
-        self.embedder = None
+        self.embedder = None  #initialized in rl class
 
-        self.attention_model = None
+        self.attention_model = Attention(ExperimentSettings.dim)
         self.perceptron = Perceptron(ExperimentSettings.dim, ExperimentSettings.dim, 2 * ExperimentSettings.dim)
 
     def forward(self, action_space, question_t: torch.Tensor, history_t: torch.Tensor):
@@ -26,12 +26,14 @@ class PolicyNet(nn.Module):
                 if rel is not None:
                     # Attention Layer: Generate Similarity Scores between q and r and current point of attention
                     if self.use_attention:
+                        ### TODO: Attention vector preprocess
                         question = self.attention(rel, question_t)
                     else:
                         question = question_t.sum(dim=0)
 
                     # Perceptron Module: Generate Semantic Score for action given q
                     if self.use_perceptron:
+                        ### TODO: perceptron vector preprocess
                         score = self.perceptron(rel, history_t, question)
                     else:
                         rel = torch.norm(rel)
