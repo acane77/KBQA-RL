@@ -3,9 +3,11 @@ class ExperimentSettingsMeta(type):
         super().__init__(*args, **kwargs)
         self._relation_embedding_dimension = 50
         self._word_embedding_dimension = 50
+        self._dim = 50
         self._max_T = 10
         self._gamma = 0.8
         self._learning_rate = 1e-3
+        self._enable_cuda = False
 
     @property
     def relation_embedding_dimension(self):
@@ -26,6 +28,14 @@ class ExperimentSettingsMeta(type):
     @property
     def gamma(self):
         return self._gamma
+
+    @property
+    def dim(self):
+        return self._dim
+
+    @property
+    def enable_cuda(self):
+        return self._enable_cuda
 
 
 class ExperimentSettings(metaclass=ExperimentSettingsMeta):

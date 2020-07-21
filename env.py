@@ -29,6 +29,15 @@ class Environment:
                            self.state.t+1, q_t=updated_questions, H_t=encoded_history)
         reward = self.reward_function(next_state, self.answer)
         reach_answer = self.answer == next_entity
+        self.state = next_state
+        return next_state, reward, reach_answer
+
+    def get_action_reward(self, action):
+        next_entity = self.KG.get_tail_entity(self.state.current_entity, action)
+        next_state = State(self.state.q, self.state.e_s, next_entity,
+                           self.state.t + 1, q_t=self.state.q_t, H_t=self.state.H_t)
+        reward = self.reward_function(next_state, self.answer)
+        reach_answer = self.answer == next_entity
         return next_state, reward, reach_answer
 
     def get_possible_actions(self):

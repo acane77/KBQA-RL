@@ -1,5 +1,7 @@
 import pickle
 import os
+import torch
+from expeiment_settings import ExperimentSettings
 
 class Utility:
     class Binary:
@@ -15,3 +17,8 @@ class Utility:
         def exists(filename: str):
             return os.path.isfile("./results/binaries/" + filename)
 
+    @staticmethod
+    def to_gpu(x):
+        if ExperimentSettings.enable_cuda and torch.cuda.is_available():
+            return x.cuda()
+        return x
