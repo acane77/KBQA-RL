@@ -109,7 +109,6 @@ class ReinforcementLearning:
 
             for t in range(T):
                 # 更新问题
-
                 question_t = self.policy_net.slp(q)
                 q_t.append(question_t)
                 # 从环境获取动作空间
@@ -117,23 +116,21 @@ class ReinforcementLearning:
                 if possible_actions is None:
                     break
                 action_space = self.beam_search(possible_actions)
-                action_space.append('cfsdfsdfsdfsdfe')
                 action_embeddings = [self.embedder.get_relation_embedding(action) for action in action_space]
                 # 移除在找不到relation embedding的action
                 action_space = [action for action in filter(lambda x: x is not None,
                                       [action_space[i] if x is not None else None for i, x in enumerate(action_embeddings)])]
+                if not action_space:
+                    break
                 action_embeddings = [e for e in filter(lambda x: x is not None, action_embeddings)]
                 action_embeddings = torch.stack(action_embeddings)
-
-                action_space, action_distribution = self.policy_net(action_embeddings, q_t[t], H_t[t])
-                if action_space is None:
-                    break
-                action = self.sample_action(action_space, action_distribution)
+                # 通过策略网络计算动作分布
+                action_distribution = self.policy_net(action_embeddings, q_t[t], H_t[t])
+                action, action_idx = self.sample_action(action_space, action_distribution)
                 #action_history.append(action)
-                # TODO: 提前获取以适应Cuda
-                action_pool.append(self.dataset.embedder.get_relation_embedding(action))
+                action_pool.append(action_embeddings[action_idx])
                 H_t.append(self.policy_net.gru(action_pool[t].unsqueeze(dim=0).unsqueeze(dim=0)))
-                # 从环境获取奖励dw
+                # 从环境获取奖励
                 next_state, reward, reach_answer = self.env.step(action, q_t, H_t)
                 episode_reward = ExpSet.gamma * episode_reward + reward
                 state_pool[t+1] = next_state
@@ -171,7 +168,7 @@ class ReinforcementLearning:
 
     def sample_action(self, action_space, action_distribution):
         idx = torch.multinomial(action_distribution, 1).item()
-        return action_space[idx]
+        return action_space[idx], idx
 
     def save_model(self, filename):
         torch.save(self.policy_net.state_dict(), filename)

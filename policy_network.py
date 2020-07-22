@@ -19,7 +19,7 @@ class PolicyNet(nn.Module):
         self.gru = GRU(ExpSet.dim, ExpSet.dim // 2, 2, ExpSet.dim)
         self.perceptron = Perceptron(ExpSet.dim, ExpSet.dim, 2 * ExpSet.dim)
 
-    def forward(self, action_space: torch.Tensor, question_t: torch.Tensor, history_t: torch.Tensor):
+    def forward_deprecated(self, action_space: torch.Tensor, question_t: torch.Tensor, history_t: torch.Tensor):
         semantic_scores = []
         actions = []
         for action in action_space:
@@ -47,3 +47,29 @@ class PolicyNet(nn.Module):
             action_distribution = torch.softmax(torch.tensor(semantic_scores), dim=0)
             return actions, action_distribution
         return None, None
+
+    def forward(self, action_embedding: torch.Tensor, question_t: torch.Tensor, history_t: torch.Tensor):
+        '''
+        :param action_embedding: 动作空间的嵌入 [ m x d ]
+        :param question_t: 问题向量 [ n x d ]
+        :param history_t: 编码的历史记录 [ d ]
+        :return: 动作分布 [ d ]
+        '''
+        m = action_embedding.shape[0]
+        # Attention Layer: Generate Similarity Scores between q and r and current point of attention
+        if self.use_attention:
+            question, _ = self.attention(question_t.expand([m, *question_t.shape]), action_embedding.reshape(m, 1, -1))
+        else:
+            question = question_t.expand([m, *question_t.shape])
+        oq = question
+        question = question.sum(dim=1)
+        # Perceptron Module: Generate Semantic Score for action given q
+        if self.use_perceptron:
+            question_with_history = self.perceptron4hq(torch.cat([history_t.expand(question.shape), question], dim=1))
+            semantic_scores = (question_with_history * action_embedding).sum(dim=1)
+        else:
+            action_embedding = torch.norm(action_embedding, dim=1)
+            question = torch.norm(question, dim=1)
+            semantic_scores = (action_embedding * question)  ## TODO: check it!! l2_normlize
+        action_distribution = torch.softmax(semantic_scores, dim=0)
+        return action_distribution
