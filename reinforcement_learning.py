@@ -86,14 +86,13 @@ class ReinforcementLearning:
         for episode in range(self.episodes):
             T = ExpSet.max_T
             d = ExpSet.dim
-            n = len(q)
-
             ## 历史信息
-            state_pool = {}      # S_t: T x State
-            q_t = []             # q_t: T x n x d  问题池
+            ## TODO: 使用Tensor而不是数组来适配CUDA
+            state_pool = {}      # S_t: T x State  历史状态
+            q_t = []             # q_t: T x n x d  历史问题
             H_t = []             # H_t: T x d      历史信息
-            action_pool = []     # r_t: T x d
-            attention_wenghted_question_pool = torch.zeros((T, d))  # q_t_star: T x d
+            r_t = []             # r_t: T x d      历史动作
+            q_t_star = torch.zeros((T, d)) # T x d 添加注意力之后的历史问题（未使用）
             #action_history = []
             initial_action = torch.zeros(d)
             H_t.append(self.policy_net.gru(initial_action.unsqueeze(dim=0).unsqueeze(dim=0)))
@@ -126,8 +125,8 @@ class ReinforcementLearning:
                 action_distribution = self.policy_net(action_embeddings, q_t[t], H_t[t])
                 action, action_idx = self.sample_action(action_space, action_distribution)
                 #action_history.append(action)
-                action_pool.append(action_embeddings[action_idx])
-                H_t.append(self.policy_net.gru(action_pool[t].unsqueeze(dim=0).unsqueeze(dim=0)))
+                r_t.append(action_embeddings[action_idx])
+                H_t.append(self.policy_net.gru(r_t[t].unsqueeze(dim=0).unsqueeze(dim=0))) ##
                 # 从环境获取奖励
                 next_state, reward, reach_answer = self.env.step(action, q_t, H_t)
                 episode_reward = ExpSet.gamma * episode_reward + reward
