@@ -19,35 +19,6 @@ class PolicyNet(nn.Module):
         self.gru = GRU(ExpSet.dim, ExpSet.dim // 2, 2, ExpSet.dim)
         self.perceptron = Perceptron(ExpSet.dim, ExpSet.dim, 2 * ExpSet.dim)
 
-    def forward_deprecated(self, action_space: torch.Tensor, question_t: torch.Tensor, history_t: torch.Tensor):
-        semantic_scores = []
-        actions = []
-        for action in action_space:
-            ## TODO: 提前load适应GPU
-            rel = self.embedder.get_relation_embedding(action)
-            if rel is not None:
-                # Attention Layer: Generate Similarity Scores between q and r and current point of attention
-                if self.use_attention:
-                    question, _ = self.attention(question_t.reshape([-1, *question_t.shape]), rel.reshape(1, 1, -1))
-                    question = question.squeeze()
-                else:
-                    question = question_t
-                question = question.sum(dim=0)
-                # Perceptron Module: Generate Semantic Score for action given q
-                if self.use_perceptron:
-                    question_with_history = self.perceptron4hq(torch.cat([history_t, question]))
-                    score = (question_with_history * rel).sum()
-                else:
-                    rel = torch.norm(rel)
-                    question = torch.norm(question)
-                    score = (rel * question).sum()
-                semantic_scores.append(score)
-                actions.append(action)
-        if len(actions) > 0:
-            action_distribution = torch.softmax(torch.tensor(semantic_scores), dim=0)
-            return actions, action_distribution
-        return None, None
-
     def forward(self, action_embedding: torch.Tensor, question_t: torch.Tensor, history_t: torch.Tensor):
         '''
         :param action_embedding: 动作空间的嵌入 [ m x d ]
@@ -61,7 +32,6 @@ class PolicyNet(nn.Module):
             question, _ = self.attention(question_t.expand([m, *question_t.shape]), action_embedding.reshape(m, 1, -1))
         else:
             question = question_t.expand([m, *question_t.shape])
-        oq = question
         question = question.sum(dim=1)
         # Perceptron Module: Generate Semantic Score for action given q
         if self.use_perceptron:
