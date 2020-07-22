@@ -1,17 +1,16 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from nets.attention import Attention
 from nets.perceptron import Perceptron
 from expeiment_settings import ExpSet
 from nets.lstm import GRU
 
 class PolicyNet(nn.Module):
-    def __init__(self, use_attention, use_perceptron):
+    def __init__(self):
         super(PolicyNet, self).__init__()
 
-        self.use_attention = use_attention
-        self.use_perceptron = use_perceptron
+        self.use_attention = ExpSet.use_attention
+        self.use_perceptron = ExpSet.use_perceptron
 
         self.attention = Attention(ExpSet.dim)
         self.perceptron4hq = Perceptron(2 * ExpSet.dim, ExpSet.dim, ExpSet.dim)

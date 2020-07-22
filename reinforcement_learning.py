@@ -1,21 +1,19 @@
 from dataset import Dataset
 from policy_network import PolicyNet
-from nets.perceptron import Perceptron
 from env import Environment
 from expeiment_settings import ExpSet
 from state import State
-from utils import Utility
 import torch
 import numpy as np
 from tqdm import tqdm
 
 class ReinforcementLearning:
-    def __init__(self, dataset: Dataset, policy_net: PolicyNet, num_epochs, num_episode, steps):
+    def __init__(self, dataset: Dataset, policy_net: PolicyNet):
         self.dataset = dataset
-        self.epochs = num_epochs
-        self.episodes = num_episode
+        self.epochs = ExpSet.epochs
+        self.episodes = ExpSet.episodes
         self.training = True
-        self.steps = steps
+        self.steps = ExpSet.max_T
         self.env = Environment(self.dataset.KG)
 
         self.policy_net = policy_net
