@@ -21,7 +21,7 @@ class Environment:
         self.step_count = 0
         return self
 
-    def step(self, action :str, updated_questions: torch.Tensor, encoded_history: torch.Tensor):
+    def step(self, action :str, updated_questions, encoded_history):
         assert self.state is not None, "No answer and start state set"
         self.step_count = self.step_count + 1
         next_entity = self.KG.get_tail_entity(self.state.current_entity, action)

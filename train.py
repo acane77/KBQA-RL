@@ -17,6 +17,8 @@ def main():
     rl = ReinforcementLearning(dataset=dataset, policy_net=policy_net,
                                num_epochs=ExpSet.epochs, num_episode=ExpSet.episodes,
                                steps=ExpSet.max_T)
+    print(policy_net)
+    print('Number of parameters: ', sum(param.numel() for param in policy_net.parameters()))
     rl.train()
     rl.test()
     rl.save_model('results/policy_net_{}'.format(np.random.randint(1e6, 1e7)))

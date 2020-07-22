@@ -1,6 +1,5 @@
 from dataset import Dataset
 from policy_network import PolicyNet
-from nets.lstm import GRU
 from nets.perceptron import Perceptron
 from env import Environment
 from expeiment_settings import ExpSet
@@ -8,7 +7,7 @@ from state import State
 from utils import Utility
 import torch
 import numpy as np
-import torch.nn as nn
+from tqdm import tqdm
 
 class ReinforcementLearning:
     def __init__(self, dataset: Dataset, policy_net: PolicyNet, num_epochs, num_episode, steps):
@@ -22,17 +21,10 @@ class ReinforcementLearning:
         self.policy_net = policy_net
         self.policy_net.embedder = self.dataset.embedder
         self.optimizer = torch.optim.Adam(policy_net.parameters(), lr=ExpSet.learning_rate)
-        self.initialize_nets()
-
-        self.slp = nn.Linear(in_features=ExpSet.dim, out_features=ExpSet.dim)
 
     @property
     def KG(self):
         return self.dataset.KG
-
-    def initialize_nets(self):
-        self.gru = GRU(ExpSet.dim, ExpSet.dim // 2, 2, ExpSet.dim)
-        self.perceptron = Perceptron(ExpSet.dim, ExpSet.dim, 2 * ExpSet.dim)
 
     @property
     def T(self):
@@ -53,9 +45,9 @@ class ReinforcementLearning:
         epochs = self.epochs if self.training else 1
         for epoch in range(epochs):
             self.dataset.train(self.training)
-            print('\n >>>>>> {}'.format('TRAINING: EPOCH {}\n'.format(epoch) if self.training else 'TESTING'))
+            print('\n>>>>>> {}'.format('TRAINING: EPOCH {}'.format(epoch) if self.training else 'TESTING'))
             # Train
-            for i, d in enumerate(self.dataset):
+            for d in tqdm(self.dataset):
                 _, q, e_s, answer = d
                 #print(i, _, answer)
                 ## Only for display, they were tuned during each episode
@@ -70,9 +62,8 @@ class ReinforcementLearning:
             # Validate
             if not self.training:
                 continue
-            print('--- VALIDATING --\n')
             self.dataset.train(False)
-            for d in self.dataset:
+            for d in tqdm(self.dataset):
                 _, q, e_s, answer = d
                 ## Only for display, they were tuned during each episode
                 acc, loss = self.learn(q, e_s, answer, False)
@@ -95,7 +86,6 @@ class ReinforcementLearning:
         correct_predictions = 0
         total_predictions = self.episodes
         for episode in range(self.episodes):
-            reward_pool = []
             T = ExpSet.max_T
             d = ExpSet.dim
             n = len(q)
@@ -108,7 +98,7 @@ class ReinforcementLearning:
             attention_wenghted_question_pool = torch.zeros((T, d))  # q_t_star: T x d
             #action_history = []
             initial_action = torch.zeros(d)
-            H_t.append(self.gru(initial_action.unsqueeze(dim=0).unsqueeze(dim=0)))
+            H_t.append(self.policy_net.gru(initial_action.unsqueeze(dim=0).unsqueeze(dim=0)))
 
             ## 初始化环境
             self.env.new_question(State(q, e_s, e_s, 0, q_t, H_t), answer)
@@ -120,7 +110,7 @@ class ReinforcementLearning:
             for t in range(T):
                 # 更新问题
 
-                question_t = self.slp(q)
+                question_t = self.policy_net.slp(q)
                 q_t.append(question_t)
                 # 从环境获取动作空间
                 possible_actions = self.env.get_possible_actions()
@@ -134,23 +124,24 @@ class ReinforcementLearning:
                 #action_history.append(action)
                 # TODO: 提前获取以适应Cuda
                 action_pool.append(self.dataset.embedder.get_relation_embedding(action))
-                H_t.append(self.gru(action_pool[t].unsqueeze(dim=0).unsqueeze(dim=0)))
-                # 从环境获取奖励
+                H_t.append(self.policy_net.gru(action_pool[t].unsqueeze(dim=0).unsqueeze(dim=0)))
+                # 从环境获取奖励dw
                 next_state, reward, reach_answer = self.env.step(action, q_t, H_t)
                 episode_reward = ExpSet.gamma * episode_reward + reward
                 state_pool[t+1] = next_state
                 rewards.append(reward)
                 action_probs.append(action_distribution)
-                if reach_answer:
-                    break
+                #if training and reach_answer: # 只有训练的时候环境中有监督信息
+                #    break
             prediction = state_pool[len(state_pool)-1].e_t
+            #print(' -- correct: {}     prediction: {}    rewards: {}'.format(answer, prediction, rewards))
             if not rewards:
                 continue
             # TODO: 如果这个有用，那么先考虑直接在每一个tensor上做运算，不能直接stack起来因为prob的维度不一样
             #action_probs = (action_probs)
             if prediction == answer:
                 correct_predictions = correct_predictions + 1
-            ## TODO: log_prossibility loss function
+            ## TODO: log_prossibility loss function if needed
             loss = loss - episode_reward
             if training:
                 loss.backward()

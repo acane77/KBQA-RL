@@ -6,7 +6,7 @@ class ExperimentSettingsMeta(type):
         self._relation_embedding_dimension = 50
         self._word_embedding_dimension = 50
         self._dim = 50
-        self._max_T = 10
+        self._max_T = 3
         self._gamma = 0.8
         self._learning_rate = 1e-3
         self._enable_cuda = False
@@ -105,7 +105,7 @@ class ExpSet(metaclass=ExperimentSettingsMeta):
                             help='Load saved model')
         parser.add_argument('--gamma', dest='gamma', action='store', type=float, default=0.8,
                             help='Gamma (Discount factor of reward on reinforcement learning, default 0.8)')
-        parser.add_argument('--max-hop', dest='T', action='store', type=float, default=3,
+        parser.add_argument('--max-hop', dest='T', action='store', type=float, default=2,
                             help='Max hop on graph (default 3)')
         parser.add_argument('--disable-cache', dest='disable_cache',  action='count', default=0,
                             help='Disable cache on dataset')

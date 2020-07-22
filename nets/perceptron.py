@@ -14,5 +14,5 @@ class Perceptron(nn.Module):
     def forward(self, x):
         out = self.fc1(x)
         out = torch.relu(out)
-        out = self.fc2(x)
+        out = self.fc2(out)
         return out
