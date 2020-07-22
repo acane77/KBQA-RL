@@ -4,6 +4,7 @@ from nets.attention import Attention
 from nets.perceptron import Perceptron
 from expeiment_settings import ExpSet
 from nets.lstm import GRU
+import torch.nn.functional as F
 
 class PolicyNet(nn.Module):
     def __init__(self):
@@ -37,8 +38,8 @@ class PolicyNet(nn.Module):
             question_with_history = self.perceptron4hq(torch.cat([history_t.expand(question.shape), question], dim=1))
             semantic_scores = (question_with_history * action_embedding).sum(dim=1)
         else:
-            action_embedding = torch.norm(action_embedding, dim=1)
-            question = torch.norm(question, dim=1)
+            action_embedding = F.normalize(action_embedding, p=2)
+            question = F.normalize(question, p=2)
             semantic_scores = (action_embedding * question)  ## TODO: check it!! l2_normlize
         action_distribution = torch.softmax(semantic_scores, dim=0)
         return action_distribution

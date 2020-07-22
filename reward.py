@@ -1,5 +1,6 @@
 import torch
-from state import *
+from state import State
+import torch.nn.functional as F
 
 class Reward:
     def __init__(self):
@@ -29,8 +30,8 @@ class CosineSimiliarityReward(Reward):
             return torch.tensor(0.)
         H_t = next_state.H_t[t-1]
         Q_t = torch.stack(next_state.q_t).sum(dim=(0, 1))  ## 将问题q_t的的每一维相加
-        Q_t = torch.norm(Q_t)
-        H_t = torch.norm(H_t)
+        Q_t = F.normalize(Q_t, dim=0, p=2)   ## TODO: FIX NORM
+        H_t = F.normalize(H_t, dim=0, p=2)   ## TODO: FIX NORM
         reward = torch.cosine_similarity(Q_t, H_t, dim=0)
         if answer == next_state.e_t:
             reward = reward + torch.tensor(1)
