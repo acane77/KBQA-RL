@@ -17,7 +17,7 @@ class ExperimentSettingsMeta(type):
         self._use_perceptron = True
         self._epochs = 200
         self._episodes = 1
-        self._seed = 123456
+        self._seed = 1
 
     @property
     def seed(self):
@@ -86,7 +86,7 @@ class ExpSet(metaclass=ExperimentSettingsMeta):
         parser = argparse.ArgumentParser()
         parser.add_argument('--cuda', dest='cuda', action='count', default=0,
                             help='Enable CUDA.')
-        parser.add_argument('--seed', dest='seed', type=int, default=12345, help='Random seed.')
+        parser.add_argument('--seed', dest='seed', type=int, default=1, help='Random seed.')
         parser.add_argument('--epochs', dest='epochs', type=int, default=200,
                             help='Number of epochs to train. (default 200)')
         parser.add_argument('--episodes', dest='episodes', type=int, default=1,

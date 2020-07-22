@@ -71,11 +71,11 @@ class ReinforcementLearning:
             print('## Validation loss: {}, accuracy: {}'.format(torch.stack(validate_loss).mean(), np.mean(validate_acc)))
             validate_acc, validate_loss = [], []
 
-    def learn(self, q, e_s, answer, training):
+    def learn(self, q: torch.Tensor, e_s :str, answer :str, training :bool):
         '''
-        :param q: 问题 :n x d
-        :param e_s: 头实体 :str
-        :param answer: 答案 :str
+        :param q: 问题 [n x d]
+        :param e_s: 头实体
+        :param answer: 答案
         :param training:
         :return:
         '''
@@ -83,6 +83,10 @@ class ReinforcementLearning:
         loss = torch.tensor(0.)
         correct_predictions = 0
         total_predictions = self.episodes
+
+        q, _ = self.policy_net.bigru(q.unsqueeze(dim=1))
+        q = q.squeeze(dim=1)
+
         for episode in range(self.episodes):
             T = ExpSet.max_T
             d = ExpSet.dim
@@ -92,10 +96,12 @@ class ReinforcementLearning:
             q_t = []             # q_t: T x n x d  历史问题
             H_t = []             # H_t: T x d      历史信息
             r_t = []             # r_t: T x d      历史动作
-            q_t_star = torch.zeros((T, d)) # T x d 添加注意力之后的历史问题（未使用）
-            #action_history = []
+            #q_t_star = torch.zeros((T, d)) # T x d 添加注意力之后的历史问题（未使用）
+            #action_history = [] # 动作历史（字符串）（未使用）
             initial_action = torch.zeros(d)
-            H_t.append(self.policy_net.gru(initial_action.unsqueeze(dim=0).unsqueeze(dim=0)))
+            history_0, _ = self.policy_net.gru(initial_action.unsqueeze(dim=0).unsqueeze(dim=0))
+            history_0 = history_0.squeeze()
+            H_t.append(history_0)
 
             ## 初始化环境
             self.env.new_question(State(q, e_s, e_s, 0, q_t, H_t), answer)
@@ -126,7 +132,9 @@ class ReinforcementLearning:
                 action, action_idx = self.sample_action(action_space, action_distribution)
                 #action_history.append(action)
                 r_t.append(action_embeddings[action_idx])
-                H_t.append(self.policy_net.gru(r_t[t].unsqueeze(dim=0).unsqueeze(dim=0))) ##
+                history_t, _ = self.policy_net.gru(r_t[t].unsqueeze(dim=0).unsqueeze(dim=0))
+                history_t = history_t.squeeze()
+                H_t.append(history_t) ##
                 # 从环境获取奖励
                 next_state, reward, reach_answer = self.env.step(action, q_t, H_t)
                 episode_reward = ExpSet.gamma * episode_reward + reward

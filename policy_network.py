@@ -3,7 +3,6 @@ import torch.nn as nn
 from nets.attention import Attention
 from nets.perceptron import Perceptron
 from expeiment_settings import ExpSet
-from nets.lstm import GRU
 import torch.nn.functional as F
 
 class PolicyNet(nn.Module):
@@ -16,8 +15,9 @@ class PolicyNet(nn.Module):
         self.attention = Attention(ExpSet.dim)
         self.perceptron4hq = Perceptron(2 * ExpSet.dim, ExpSet.dim, ExpSet.dim)
         self.slp = nn.Linear(in_features=ExpSet.dim, out_features=ExpSet.dim)
-        self.gru = GRU(ExpSet.dim, ExpSet.dim // 2, 2, ExpSet.dim)
+        self.gru = nn.GRU(ExpSet.dim, ExpSet.dim, 1, bidirectional=False)
         self.perceptron = Perceptron(ExpSet.dim, ExpSet.dim, 2 * ExpSet.dim)
+        self.bigru = nn.GRU(ExpSet.dim, ExpSet.dim // 2, 1, bidirectional=True)
 
     def forward(self, action_embedding: torch.Tensor, question_t: torch.Tensor, history_t: torch.Tensor):
         '''
