@@ -12,7 +12,6 @@ class PolicyNet(nn.Module):
 
         self.use_attention = use_attention
         self.use_perceptron = use_perceptron
-        self.embedder = None  #initialized in rl class
 
         self.attention = Attention(ExpSet.dim)
         self.perceptron4hq = Perceptron(2 * ExpSet.dim, ExpSet.dim, ExpSet.dim)
@@ -20,7 +19,7 @@ class PolicyNet(nn.Module):
         self.gru = GRU(ExpSet.dim, ExpSet.dim // 2, 2, ExpSet.dim)
         self.perceptron = Perceptron(ExpSet.dim, ExpSet.dim, 2 * ExpSet.dim)
 
-    def forward(self, action_space, question_t: torch.Tensor, history_t: torch.Tensor):
+    def forward(self, action_space: torch.Tensor, question_t: torch.Tensor, history_t: torch.Tensor):
         semantic_scores = []
         actions = []
         for action in action_space:

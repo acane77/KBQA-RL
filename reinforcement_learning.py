@@ -19,7 +19,7 @@ class ReinforcementLearning:
         self.env = Environment(self.dataset.KG)
 
         self.policy_net = policy_net
-        self.policy_net.embedder = self.dataset.embedder
+        self.embedder = self.dataset.embedder
         self.optimizer = torch.optim.Adam(policy_net.parameters(), lr=ExpSet.learning_rate)
 
     @property
@@ -117,7 +117,15 @@ class ReinforcementLearning:
                 if possible_actions is None:
                     break
                 action_space = self.beam_search(possible_actions)
-                action_space, action_distribution = self.policy_net(action_space, q_t[t], H_t[t])
+                action_space.append('cfsdfsdfsdfsdfe')
+                action_embeddings = [self.embedder.get_relation_embedding(action) for action in action_space]
+                # 移除在找不到relation embedding的action
+                action_space = [action for action in filter(lambda x: x is not None,
+                                      [action_space[i] if x is not None else None for i, x in enumerate(action_embeddings)])]
+                action_embeddings = [e for e in filter(lambda x: x is not None, action_embeddings)]
+                action_embeddings = torch.stack(action_embeddings)
+
+                action_space, action_distribution = self.policy_net(action_embeddings, q_t[t], H_t[t])
                 if action_space is None:
                     break
                 action = self.sample_action(action_space, action_distribution)
