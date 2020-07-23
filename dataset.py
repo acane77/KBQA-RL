@@ -1,7 +1,6 @@
 import torch
 import pandas as pd
 from knowledge_graph import KnowledgeGraph
-from entity_link import EntityLinker
 from embedding import Embedder
 from expeiment_settings import ExpSet
 from utils import Utility
@@ -14,7 +13,6 @@ class Dataset:
     '''
     def __init__(self, path_KG, path_QA, split_ratio=0.8, using_cache=True):
         self.KG = KnowledgeGraph(path_KG)
-        entity_linker = EntityLinker(self.KG)
         self.embedder = Embedder()
         self.training = True  # 指定是否是训练阶段
         self._iter_i = 0
@@ -31,9 +29,10 @@ class Dataset:
         questions['answer'] = questions['answer_set'].apply(lambda x: x.split('(')[0])
         questions['q_split'] = questions['question_sentence'].apply(lambda x: x.lower().split(' '))
         questions['answer'] = questions['answer_set'].apply(lambda x: x.split('(')[0])
-
+        questions['e_s'] = questions['answer_path'].apply(lambda x: x.split('#')[0])
         # find head entity e_s, answer, and question_list by parsing the question_sentence
-        questions['q_str'], questions['e_s'] = zip(*questions['question_sentence'].apply(lambda q: entity_linker.parse_question(q.split('?')[0])))
+        questions['q_str'] = [self.parse_question(row['question_sentence'].split('?')[0], row['e_s'])
+                              for idx, row in questions.iterrows()]
 
         # 对问题编码
         # NOTE: 这里是正对小数据集采取的空间换时间的方式，避免每一次都重新embed问题，对于大数据集需要单独处理数据
@@ -61,6 +60,27 @@ class Dataset:
 
     def embed_relation(self, relation):
         return self.embedder.get_relation_embedding(relation)
+
+    def parse_question(self, question: str, e_s: str):
+        '''
+        将问题分为以单词为单位的分词列表，并找出头实体(e_s)【问题中在KG实体的单词中最长的单词】，并替换为<e>
+
+        :param question: 问题字符串
+        :param e_s: 头实体
+        :return: 问题分词列表（字符串）
+        '''
+        modified_question_list = []
+        for item in question.split(' '):
+            if item == e_s:
+                modified_question_list.append('<e>')
+            else:
+                if len(item.split('_')) > 0:
+                    for x in item.split('_'):
+                        if x != '':
+                            modified_question_list.append(x)
+                else:
+                    modified_question_list.append(item)
+        return modified_question_list
 
     def __iter__(self):
         return self
@@ -106,3 +126,6 @@ class Dataset:
         self.training = _train
         self._iter_i = 0
 
+if __name__ == '__main__':
+    dataset = Dataset(ExpSet.path_KB, ExpSet.path_QA, 0.8)
+    print(dataset[0])
