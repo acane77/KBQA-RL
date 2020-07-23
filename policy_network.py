@@ -15,9 +15,10 @@ class PolicyNet(nn.Module):
         self.attention = Attention(ExpSet.dim)
         self.perceptron4hq = Perceptron(2 * ExpSet.dim, ExpSet.dim, ExpSet.dim)
         self.slp = nn.Linear(in_features=ExpSet.dim, out_features=ExpSet.dim)
-        self.gru = nn.GRU(ExpSet.dim, ExpSet.dim, 2, bidirectional=False)
+        self.gru = nn.GRU(ExpSet.dim, ExpSet.dim, 3, bidirectional=False)
         self.perceptron = Perceptron(ExpSet.dim, ExpSet.dim, 2 * ExpSet.dim)
-        self.bigru = nn.GRU(ExpSet.dim, ExpSet.dim // 2, 3, bidirectional=True)
+        self.bigru1 = nn.GRU(ExpSet.dim, ExpSet.dim // 2, 3, bidirectional=True)
+        self.bigru2 = nn.GRU(ExpSet.dim, ExpSet.dim // 2, 3, bidirectional=True)
 
     def forward(self, action_embedding: torch.Tensor, question_t: torch.Tensor, history_t: torch.Tensor):
         '''

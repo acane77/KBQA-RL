@@ -84,7 +84,8 @@ class ReinforcementLearning:
         correct_predictions = 0
         total_predictions = self.episodes
 
-        q, _ = self.policy_net.bigru(q.unsqueeze(dim=1))
+        q, _ = self.policy_net.bigru1(q.unsqueeze(dim=1))
+        q, _ = self.policy_net.bigru1(q)
         q = q.squeeze(dim=1)
 
         for episode in range(self.episodes):
